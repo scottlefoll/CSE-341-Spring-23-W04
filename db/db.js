@@ -34,12 +34,12 @@ async function connect() {
 }
 
 async function close() {
-    if client {
+    if (client){
         try {
             await client.close();
             console.log('Connection to database closed');
             pool = undefined;
-            } catch (err) {
+        } catch (err) {
             console.error('Error closing database connection:', err);
             throw err;
         }
