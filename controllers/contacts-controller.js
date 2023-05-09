@@ -41,11 +41,11 @@ async function getContacts(req, res) {
     }
 }
 
-    // GET /contacts/:name  ('jane_doe') ***
+    // GET /contacts/:id  ('jane_doe') ***
   async function getContactById(res, req, id) {
     console.log('getContactById called');
     console.log('uri:', uri);
-    const id = nameOfContact.toString().indexOf(' ') > 0 ? nameOfContact.toString().split(' ').join('_') : nameOfContact.toString();
+    // const id = nameOfContact.toString().indexOf(' ') > 0 ? nameOfContact.toString().split(' ').join('_') : nameOfContact.toString();
     try {
       const pool = await connect();
       const client = await pool.acquire();
