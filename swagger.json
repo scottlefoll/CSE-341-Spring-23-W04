@@ -1,0 +1,200 @@
+openapi: 3.0.1
+info:
+  title: Web Services Contacts API
+  license:
+    name: Apache 2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
+  contact:
+    name: Scott LeFoll
+  description: An API demonstrating CRUD operations on MongoDB
+  version: '0.1'
+servers:
+  - url: 'https://cse-342-spring23-w03.onrender.com'
+  
+paths:
+  /db:
+    get:
+      description: Return all dbs
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+  /contacts:
+    get:
+      description: Return all contacts from Contacts.
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+              
+  /contacts/update/{_id}:
+    post:
+      description: Update the contact with the specified id in Contacts.
+      summary: Update contact by id
+      parameters:
+        - name: _id
+          in: path
+          required: true
+          description: The id of the contact to update
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                favoriteColor:
+                  type: string
+                email:
+                  type: string
+                birthday:
+                  type: string
+            examples:
+              '0':
+                value: |-
+                  {
+                      "firstName": "Zoe",
+                      "lastName": "Smithson",
+                      "email": "zsmithson@gmail.com",
+                      "favoriteColor": "blue",
+                      "birthday": "1990-05-15T00:00:00.000Z"
+                  }
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+              examples: {}
+  
+  /contacts/delete/{_id}:
+    delete:
+      description: Delete the record with the specified Id from Contacts.
+      summary: Returns user by id
+      parameters:
+        - name: _id
+          in: path
+          required: true
+          description: The id of the contact to delete
+          schema:
+            type: string
+      responses:
+        '200': 
+          description: Success!
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+              examples: {}
+
+
+  /contacts/{_id}:
+    get:
+      description: Get the contact with the specified id from Contacts
+      summary: Returns a contact by id
+      parameters:
+        - name: _id
+          in: path
+          required: true
+          description: The id of the contact to return
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+              examples: {}
+            
+  /contacts/lastName/{lName}:
+    get:
+      description: Get all records with the specified lastName from Contacts
+      summary: Returns user by lastName
+      parameters:
+        - name: lName
+          in: path
+          required: true
+          description: The lastName of the contacts to return
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+              examples: {}
+
+
+  /contacts/firstName/{fName}:
+    get:
+      description: Get all records with the specified firstName from Contacts
+      summary: Returns user by firstName
+      parameters:
+        - name: fName
+          in: path
+          required: true
+          description: The firstName of the contacts to return
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success!
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+              examples: {}
+
+  /contacts/create:
+    post:
+      description: Create a record with the specified Body in Contacts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                birthday:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                favoriteColor:
+                  type: string
+                email:
+                  type: string
+            examples:
+              '0':
+                value: |-
+                  {
+                      "firstName": "Zoe2",
+                      "lastName": "Smithson",
+                      "email": "zsmithson@gmail.com",
+                      "favoriteColor": "green",
+                      "birthday": "1990-05-15T00:00:00.000Z"
+                  }
+      responses:
+        '201':
+          description: Record created!
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+              examples: {}
