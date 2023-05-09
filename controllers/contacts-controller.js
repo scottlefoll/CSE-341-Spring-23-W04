@@ -18,9 +18,7 @@ async function getDBList(req, res) {
     } catch (err) {
       console.error(err);
       throw err;
-    } finally {
-        client.release();
-    }
+    } 
   }
 
     // GET /contacts ***
@@ -36,9 +34,7 @@ async function getContacts(req, res) {
     } catch (err) {
       console.error(err);
       throw err;
-    } finally {
-        client.release();
-    }
+    } 
 }
 
     // GET /contacts/:id  ('jane_doe') ***
@@ -55,9 +51,7 @@ async function getContacts(req, res) {
     } catch (err) {
       console.error(err);
       throw err;
-    } finally {
-        client.release();
-    }
+    } 
   }
 
 // GET /contacts/name/:name (ie. 'jane doe' or 'jane_doe') ***
@@ -77,10 +71,8 @@ async function getContactsByName(req, res, nameOfContact) {
     } catch (err) {
         console.error(err);
         throw err;
-    } finally {
-        client.release();
     }
-    }
+}
 
     // GET /contacts/lname/:name ***
 async function getContactsByLName(res, req, nameOfContact) {
@@ -95,9 +87,7 @@ async function getContactsByLName(res, req, nameOfContact) {
     } catch (err) {
       console.error(err);
       throw err;
-    } finally {
-        client.release();
-    }
+    } 
   }
 
     // GET /contacts/fname/:name ***
@@ -113,9 +103,7 @@ async function getContactsByFName(res, req, nameOfContact) {
     } catch (err) {
         console.error(err);
         throw err;
-    } finally {
-        client.release();
-    }
+    } 
 }
 
 
@@ -144,12 +132,11 @@ async function createContact(req, res) {
         const client = await pool.acquire();
         const result = await client.db(dbName).collection(coll).insertOne(newContact);
         res.status(201).send({ _id: result.insertedId });
+        client.release();
     } catch (err) {
         console.error(err);
         throw err;
-    } finally {
-        client.release();
-    }
+    } 
 }
 
     //  POST /contacts/update/:id
@@ -219,9 +206,7 @@ async function updateContact(req, res) {
     } catch (err) {
         console.error(err);
         throw err;
-    } finally {
-        client.release();
-    }
+    } 
 }
 
 
@@ -244,21 +229,25 @@ async function changeContactId(_id) {
             favoriteColor: oldContact.favoriteColor,
             birthday: oldContact.birthday,
         };
-        // insert the new contact object into the database
-        const result = await client.db(dbName).collection(coll).insertOne(newContact);
-        //   if the insert was successful, delete the old contact record
-        if (result.insertedId) {
-            await client.db(dbName).collection(coll).deleteOne({ _id });
-            // if the old contact record was successfully deleted, return the new contact record
+        try {
+            // insert the new contact object into the database
+            const result = await client.db(dbName).collection(coll).insertOne(newContact);
+            //   if the insert was successful, delete the old contact record
+            if (result.insertedId) {
+                await client.db(dbName).collection(coll).deleteOne({ _id });
+                // if the old contact record was successfully deleted, return the new contact record
+                client.release();
+                return { message: `New contact ${result.insertedId} created successfully` };
+            }
             client.release();
-            return { message: `New contact ${result.insertedId} created successfully` };
+        } catch (err) { 
+            console.error(err);
+            throw err;
         }
     } catch (err) {
         console.error(err);
         throw err;
-    } finally {
-        client.release();
-    }
+    } 
 }
 
 // DELETE /contacts/delete/:id ***
@@ -275,8 +264,6 @@ async function deleteContact(req, res) {
     } catch (err) {
         console.error(err);
         throw err;
-    } finally {
-        client.release();
     }
 }
 
