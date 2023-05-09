@@ -18,8 +18,9 @@ async function getDBList(req, res) {
     } catch (err) {
       console.error(err);
       throw err;
+    } finally {
+        client.release();
     }
-    client.release();
   }
 
     // GET /contacts ***
@@ -35,8 +36,9 @@ async function getContacts(req, res) {
     } catch (err) {
       console.error(err);
       throw err;
+    } finally {
+        client.release();
     }
-    client.release();
 }
 
     // GET /contacts/:name  ('jane_doe') ***
@@ -53,8 +55,9 @@ async function getContacts(req, res) {
     } catch (err) {
       console.error(err);
       throw err;
+    } finally {
+        client.release();
     }
-    client.release();
   }
 
 // GET /contacts/name/:name (ie. 'jane doe' or 'jane_doe') ***
@@ -74,8 +77,9 @@ async function getContactsByName(req, res, nameOfContact) {
     } catch (err) {
         console.error(err);
         throw err;
+    } finally {
+        client.release();
     }
-    client.release();
     }
 
     // GET /contacts/lname/:name ***
@@ -91,8 +95,9 @@ async function getContactsByLName(res, req, nameOfContact) {
     } catch (err) {
       console.error(err);
       throw err;
+    } finally {
+        client.release();
     }
-    client.release();
   }
 
     // GET /contacts/fname/:name ***
@@ -108,8 +113,9 @@ async function getContactsByFName(res, req, nameOfContact) {
     } catch (err) {
         console.error(err);
         throw err;
+    } finally {
+        client.release();
     }
-    client.release();
 }
 
 
@@ -141,8 +147,9 @@ async function createContact(req, res) {
     } catch (err) {
         console.error(err);
         throw err;
+    } finally {
+        client.release();
     }
-    client.release();
 }
 
     //  POST /contacts/update/:id
@@ -180,112 +187,98 @@ async function createContact(req, res) {
 //     }
 //   }
 
-// PUT /contacts/update/:id
+// PUT /contacts/update/:id ***
 async function updateContact(req, res) {
-    // if the firstName or lastName fields are updated, then the _id should be updated.
-    // in order to update the _id, we need to delete the existing contact and create a new one,
-    // since _id is immutable
-    console.log('updateContact called');
-    console.log('uri:', uri);
-    const contactId = req.params.id; // get the ID of the contact to update from the request parameters
-    // Dynamically build the updatedContact object based on the fields present in the request body
-    const updateFields = {};
-    for (const [key, value] of Object.entries(req.body)) {
-      updateFields[key] = value;
-    }
-    const updatedContact = { $set: updateFields };
-    const options = { returnOriginal: false }; // set the returnOriginal option to false to return the updated document
-try {
-    const pool = await connect();
-    const client = await pool.acquire();
-    const result = await client
-        .db(dbName)
-        .collection(coll)
-        .findOneAndUpdate({ _id: contactId }, updatedContact, options); // use findOneAndUpdate() to update the contact with the specified ID
-    //   if the update contained the firstName and/or the lastName fields, then the _id must be updated
-    if (updateFields.firstName || updateFields.lastName) {
-        await changeContactId(contactId);
-    }
-    res.send({ message: `Contact ${contactId} updated successfully`, updatedContact: result.value });
-
-    client.release();
-    return result;
-} catch (err) {
-    console.error(err);
-    throw err;
-}
-client.release();
-}
-
-
-
-
-
+        // if the firstName or lastName fields are updated, then the _id should be updated.
+        // in order to update the _id, we need to delete the existing contact and create a new one,
+        // since _id is immutable
+        console.log('updateContact called');
+        console.log('uri:', uri);
+        const contactId = req.params.id; // get the ID of the contact to update from the request parameters
+        // Dynamically build the updatedContact object based on the fields present in the request body
+        const updateFields = {};
+        for (const [key, value] of Object.entries(req.body)) {
+        updateFields[key] = value;
+        }
+        const updatedContact = { $set: updateFields };
+        const options = { returnOriginal: false }; // set the returnOriginal option to false to return the updated document
+    try {
+        const pool = await connect();
+        const client = await pool.acquire();
+        const result = await client
+            .db(dbName)
+            .collection(coll)
+            .findOneAndUpdate({ _id: contactId }, updatedContact, options); // use findOneAndUpdate() to update the contact with the specified ID
+        //   if the update contained the firstName and/or the lastName fields, then the _id must be updated
+        if (updateFields.firstName || updateFields.lastName) {
+            await changeContactId(contactId);
+        }
+        res.send({ message: `Contact ${contactId} updated successfully`, updatedContact: result.value });
+        client.release();
+        return result;
     } catch (err) {
-      console.error(err);
-      throw err;
+        console.error(err);
+        throw err;
     } finally {
-      await client.close();
+        client.release();
     }
-  }
+}
 
-    //  This function is for the internal use of the updateContact() function
-    //  It creates a new _id if the firstName or lastName fields are changed
-  async function changeContactId(_id) {
+
+//  This function is for the internal use of the updateContact() function ***
+//  It creates a new _id if the firstName or lastName fields are changed
+async function changeContactId(_id) {
     console.log('changeContactId called');
     console.log('uri:', uri);
-    const client = new MongoClient(uri);
     try {
-      await client.connect();
-
-      // find the old contact record by the _id parameter
-      const oldContact = await client.db(dbName).collection(coll).findOne({ _id });
-      // create a new contact object with the updated _id based on the firstName and lastName fields
-      const newContact = {
-        _id: `${oldContact.firstName.toLowerCase().replace(' ', '_')}_${oldContact.lastName.toLowerCase().replace(' ', '_')}`,
-        firstName: oldContact.firstName,
-        lastName: oldContact.lastName,
-        email: oldContact.email,
-        favoriteColor: oldContact.favoriteColor,
-        birthday: oldContact.birthday,
-      };
-
-      // insert the new contact object into the database
-      const result = await client.db(dbName).collection(coll).insertOne(newContact);
-    //   if the insert was successful, delete the old contact record
+        const pool = await connect();
+        const client = await pool.acquire();
+        // find the old contact record by the _id parameter
+        const oldContact = await client.db(dbName).collection(coll).findOne({ _id });
+        // create a new contact object with the updated _id based on the firstName and lastName fields
+        const newContact = {
+            _id: `${oldContact.firstName.toLowerCase().replace(' ', '_')}_${oldContact.lastName.toLowerCase().replace(' ', '_')}`,
+            firstName: oldContact.firstName,
+            lastName: oldContact.lastName,
+            email: oldContact.email,
+            favoriteColor: oldContact.favoriteColor,
+            birthday: oldContact.birthday,
+        };
+        // insert the new contact object into the database
+        const result = await client.db(dbName).collection(coll).insertOne(newContact);
+        //   if the insert was successful, delete the old contact record
         if (result.insertedId) {
             await client.db(dbName).collection(coll).deleteOne({ _id });
             // if the old contact record was successfully deleted, return the new contact record
+            client.release();
             return { message: `New contact ${result.insertedId} created successfully` };
         }
     } catch (err) {
-      console.error(err);
-      throw err;
+        console.error(err);
+        throw err;
     } finally {
-      await client.close();
+        client.release();
     }
-  }
+}
 
-  // DELETE /contacts/delete/:id
-  async function deleteContact(req, res) {
+// DELETE /contacts/delete/:id ***
+async function deleteContact(req, res) {
     console.log('deleteContact called');
     console.log('uri:', uri);
-    const client = new MongoClient(uri);
+    const contactId = req.params.id; // get the ID of the contact to delete from the request parameters
     try {
-      await client.connect();
-      const contactId = req.params.id; // get the ID of the contact to delete from the request parameters
-      const result = await client
-        .db(dbName)
-        .collection(coll)
-        .deleteOne({ _id: contactId }); // use deleteOne() method to delete the contact with the specified ID
-      res.send({ message: `Contact ${contactId} deleted successfully` });
+        const pool = await connect();
+        const client = await pool.acquire();
+        const result = await client.db(dbName).collection(coll).deleteOne({ _id: contactId }); // use deleteOne() method to delete the contact with the specified ID
+        res.send({ message: `Contact ${contactId} deleted successfully` });
+        client.release();
     } catch (err) {
-      console.error(err);
-      throw err;
+        console.error(err);
+        throw err;
     } finally {
-      await client.close();
+        client.release();
     }
-  }
+}
 
 
   module.exports = {
